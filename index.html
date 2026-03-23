@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AdaptIQ — Adaptive Learning System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+  /* ── Reset & tokens ───────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:      #0d0d0d;
+    --paper:    #f5f0e8;
+    --cream:    #ede8dc;
+    --accent:   #c8401a;
+    --accent2:  #1a6bc8;
+    --gold:     #d4a020;
+    --muted:    #7a7060;
+    --success:  #1a7a40;
+    --danger:   #c8401a;
+    --card:     #ffffff;
+    --border:   #d8d0c0;
+    --radius:   12px;
+    --shadow:   0 2px 16px rgba(13,13,13,0.08);
+    --shadow-lg:0 8px 40px rgba(13,13,13,0.14);
+    --font-head:'Syne', sans-serif;
+    --font-body:'DM Sans', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Animated background grain ───────────────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: .5;
+  }
+
+  /* ── Layout ───────────────────────────────────────────────────────── */
+  .shell { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* ── Header ───────────────────────────────────────────────────────── */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 28px 0 24px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 40px;
+    animation: fadeDown .5s ease both;
+  }
+
+  .logo {
+    font-family: var(--font-head);
+    font-size: 1.6rem; font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+  .logo span { color: var(--accent); }
+
+  .tagline {
+    font-size: .78rem; font-weight: 300; color: var(--muted);
+    letter-spacing: .08em; text-transform: uppercase;
+  }
+
+  .api-bar {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .api-bar input {
+    font-family: var(--font-body); font-size: .82rem;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 7px 12px; background: var(--cream); color: var(--ink);
+    width: 260px; transition: border-color .2s;
+  }
+  .api-bar input:focus { outline: none; border-color: var(--accent2); }
+  .api-status {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #ccc; transition: background .3s;
+    flex-shrink: 0;
+  }
+  .api-status.ok  { background: var(--success); }
+  .api-status.err { background: var(--danger); }
+
+  /* ── Tabs ─────────────────────────────────────────────────────────── */
+  .tabs {
+    display: flex; gap: 4px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 36px;
+    animation: fadeDown .5s .1s ease both;
+  }
+  .tab {
+    font-family: var(--font-head); font-size: .85rem; font-weight: 700;
+    letter-spacing: .04em; text-transform: uppercase;
+    padding: 10px 22px; border: none; background: none;
+    color: var(--muted); cursor: pointer;
+    border-bottom: 3px solid transparent; margin-bottom: -2px;
+    transition: color .2s, border-color .2s;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── Panels ───────────────────────────────────────────────────────── */
+  .panel { display: none; animation: fadeUp .35s ease both; }
+  .panel.active { display: block; }
+
+  /* ── Section titles ───────────────────────────────────────────────── */
+  .section-title {
+    font-family: var(--font-head); font-size: 1.25rem; font-weight: 800;
+    letter-spacing: -.02em; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 1.5px; background: var(--border);
+  }
+
+  /* ── Cards ────────────────────────────────────────────────────────── */
+  .card {
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
+    box-shadow: var(--shadow); margin-bottom: 20px;
+    transition: box-shadow .2s, transform .2s;
+  }
+  .card:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media(max-width:640px){ .card-grid { grid-template-columns: 1fr; } }
+
+  /* ── Forms ────────────────────────────────────────────────────────── */
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block; font-size: .78rem; font-weight: 500;
+    letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 6px;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%; font-family: var(--font-body); font-size: .92rem;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 10px 14px; background: var(--cream); color: var(--ink);
+    transition: border-color .2s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline: none; border-color: var(--accent2);
+  }
+  .field textarea { resize: vertical; min-height: 80px; }
+
+  /* ── Buttons ──────────────────────────────────────────────────────── */
+  .btn {
+    font-family: var(--font-head); font-size: .82rem; font-weight: 700;
+    letter-spacing: .05em; text-transform: uppercase;
+    padding: 11px 24px; border: 2px solid var(--ink);
+    border-radius: 8px; cursor: pointer;
+    transition: background .18s, color .18s, transform .12s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--ink); color: var(--paper); }
+  .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+  .btn-outline { background: transparent; color: var(--ink); }
+  .btn-outline:hover { background: var(--ink); color: var(--paper); }
+  .btn-accent { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #a83210; border-color: #a83210; }
+  .btn-sm { padding: 7px 16px; font-size: .75rem; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+  /* ── Badges ───────────────────────────────────────────────────────── */
+  .badge {
+    display: inline-block; font-size: .7rem; font-weight: 700;
+    letter-spacing: .06em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px;
+  }
+  .badge-correct { background: #d4f0e0; color: var(--success); }
+  .badge-wrong   { background: #fde8e0; color: var(--danger); }
+  .badge-easy    { background: #d4f0e0; color: var(--success); }
+  .badge-medium  { background: #fff3cd; color: #856404; }
+  .badge-hard    { background: #fde8e0; color: var(--danger); }
+
+  /* ── Stat boxes ───────────────────────────────────────────────────── */
+  .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+  @media(max-width:500px){ .stats-row { grid-template-columns: 1fr 1fr; } }
+  .stat-box {
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 18px;
+    text-align: center; box-shadow: var(--shadow);
+  }
+  .stat-box .num {
+    font-family: var(--font-head); font-size: 2rem; font-weight: 800;
+    color: var(--accent); line-height: 1;
+  }
+  .stat-box .lbl { font-size: .72rem; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .05em; }
+
+  /* ── Progress bar ─────────────────────────────────────────────────── */
+  .progress-wrap { margin: 8px 0; }
+  .progress-label { display: flex; justify-content: space-between; font-size: .78rem; color: var(--muted); margin-bottom: 4px; }
+  .progress-bar { height: 8px; background: var(--cream); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width .6s ease; }
+  .fill-high   { background: var(--success); }
+  .fill-mid    { background: var(--gold); }
+  .fill-low    { background: var(--danger); }
+
+  /* ── Table ────────────────────────────────────────────────────────── */
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  th {
+    font-family: var(--font-head); font-size: .72rem; font-weight: 700;
+    letter-spacing: .07em; text-transform: uppercase; color: var(--muted);
+    padding: 10px 14px; border-bottom: 2px solid var(--border); text-align: left;
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--cream); }
+
+  /* ── Toast ────────────────────────────────────────────────────────── */
+  #toast {
+    position: fixed; bottom: 28px; right: 28px; z-index: 999;
+    font-family: var(--font-body); font-size: .88rem;
+    padding: 13px 22px; border-radius: 10px;
+    background: var(--ink); color: var(--paper);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(80px); opacity: 0;
+    transition: transform .3s ease, opacity .3s ease;
+    max-width: 320px;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.success { background: var(--success); }
+  #toast.error   { background: var(--danger); }
+
+  /* ── Feedback box ─────────────────────────────────────────────────── */
+  .feedback-box {
+    background: var(--cream); border-left: 4px solid var(--accent2);
+    border-radius: 0 8px 8px 0; padding: 16px 18px;
+    font-size: .9rem; line-height: 1.7; margin-top: 16px;
+    display: none;
+  }
+  .feedback-box.visible { display: block; animation: fadeUp .3s ease; }
+  .feedback-box.correct { border-left-color: var(--success); }
+  .feedback-box.wrong   { border-left-color: var(--danger); }
+
+  /* ── Question card ────────────────────────────────────────────────── */
+  .question-display {
+    background: var(--ink); color: var(--paper);
+    border-radius: var(--radius); padding: 24px;
+    margin-bottom: 16px; display: none;
+    animation: fadeUp .3s ease;
+  }
+  .question-display.visible { display: block; }
+  .question-display .q-label {
+    font-size: .72rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px;
+  }
+  .question-display .q-text {
+    font-family: var(--font-head); font-size: 1.1rem; font-weight: 600; line-height: 1.5;
+  }
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+  .choice-btn {
+    background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.15);
+    color: var(--paper); font-family: var(--font-body); font-size: .88rem;
+    padding: 9px 14px; border-radius: 8px; cursor: pointer; text-align: left;
+    transition: background .18s, border-color .18s;
+  }
+  .choice-btn:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.35); }
+  .choice-btn.selected { background: var(--accent2); border-color: var(--accent2); }
+
+  /* ── Spinner ──────────────────────────────────────────────────────── */
+  .spinner {
+    display: inline-block; width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,.3);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  .spinner.dark { border-color: rgba(0,0,0,.15); border-top-color: var(--ink); }
+
+  /* ── Empty state ──────────────────────────────────────────────────── */
+  .empty {
+    text-align: center; padding: 48px 24px; color: var(--muted);
+  }
+  .empty .icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .empty p { font-size: .9rem; }
+
+  /* ── Animations ───────────────────────────────────────────────────── */
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes spin     { to { transform: rotate(360deg); } }
+
+  .stagger-1 { animation-delay: .05s; }
+  .stagger-2 { animation-delay: .10s; }
+  .stagger-3 { animation-delay: .15s; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- Header -->
+  <header>
+    <div>
+      <div class="logo">Adapt<span>IQ</span></div>
+      <div class="tagline">Adaptive Learning System</div>
+    </div>
+    <div class="api-bar">
+      <input type="text" id="apiBase" value="http://localhost:8000" placeholder="API base URL"/>
+      <div class="api-status" id="apiStatus" title="API status"></div>
+      <button class="btn btn-outline btn-sm" onclick="checkHealth()">Connect</button>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <nav class="tabs">
+    <button class="tab active" onclick="switchTab('student')">🎓 Student</button>
+    <button class="tab" onclick="switchTab('quiz')">✏️ Quiz</button>
+    <button class="tab" onclick="switchTab('progress')">📈 My Progress</button>
+    <button class="tab" onclick="switchTab('teacher')">📊 Teacher</button>
+    <button class="tab" onclick="switchTab('manage')">👥 Students</button>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       PANEL: STUDENT
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="panel active" id="panel-student">
+
+    <div class="card-grid">
+      <!-- Login / select student -->
+      <div class="card">
+        <div class="section-title">Select Student</div>
+        <div class="field">
+          <label>Choose a student</label>
+          <select id="studentSelect" onchange="onStudentSelect()">
+            <option value="">— select —</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="loadStudents()">
+          <span>Refresh List</span>
+        </button>
+        <div id="studentWelcome" style="margin-top:18px;display:none;">
+          <div style="font-family:var(--font-head);font-size:1.1rem;font-weight:700;" id="welcomeName"></div>
+          <div style="font-size:.82rem;color:var(--muted);margin-top:2px;" id="welcomeEmail"></div>
+        </div>
+      </div>
+
+      <!-- Quick stats -->
+      <div class="card" id="studentStatsCard">
+        <div class="section-title">Quick Stats</div>
+        <div id="quickStats">
+          <div class="empty"><div class="icon">📭</div><p>Select a student to see stats</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Register new student -->
+    <div class="card stagger-1">
+      <div class="section-title">Register New Student</div>
+      <div class="card-grid">
+        <div class="field">
+          <label>Full Name</label>
+          <input type="text" id="newName" placeholder="e.g. Jane Doe"/>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="newEmail" placeholder="e.g. jane@school.com"/>
+        </div>
+      </div>
+      <button class="btn btn-accent" onclick="registerStudent()">Create Student</button>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       PANEL: QUIZ
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="panel" id="panel-quiz">
+
+    <div class="card-grid">
+      <!-- Get a question -->
+      <div class="card">
+        <div class="section-title">Get Question</div>
+        <div class="field">
+          <label>Topic</label>
+          <input type="text" id="qTopic" placeholder="e.g. math, history, biology"/>
+        </div>
+        <div class="field">
+          <label>Difficulty</label>
+          <select id="qDifficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="btnGenQ" onclick="generateQuestion()">Generate Question</button>
+          <button class="btn btn-outline" id="btnAdaptQ" onclick="getAdaptiveQuestion()">Adaptive</button>
+        </div>
+      </div>
+
+      <!-- Submit answer -->
+      <div class="card">
+        <div class="section-title">Submit Answer</div>
+        <div class="field">
+          <label>Student ID</label>
+          <input type="number" id="ansStudentId" placeholder="e.g. 1"/>
+        </div>
+        <div class="field">
+          <label>Your Answer</label>
+          <input type="text" id="answerInput" placeholder="Type your answer here"/>
+        </div>
+        <button class="btn btn-accent" id="btnSubmit" onclick="submitAnswer()" disabled>Submit Answer</button>
+      </div>
+    </div>
+
+    <!-- Question display -->
+    <div class="question-display" id="questionDisplay">
+      <div class="q-label">Question <span id="qDiffBadge"></span></div>
+      <div class="q-text" id="questionText"></div>
+      <div class="choices" id="choicesWrap"></div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="feedback-box" id="feedbackBox">
+      <strong id="feedbackResult"></strong>
+      <div id="feedbackText" style="margin-top:8px;"></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       PANEL: MY PROGRESS
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="panel" id="panel-progress">
+
+    <div class="card">
+      <div class="section-title">View Progress</div>
+      <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+        <div class="field" style="margin:0;flex:1;min-width:160px;">
+          <label>Student ID</label>
+          <input type="number" id="progStudentId" placeholder="e.g. 1"/>
+        </div>
+        <button class="btn btn-primary" onclick="loadProgress()">Load Progress</button>
+      </div>
+    </div>
+
+    <div id="progressContent">
+      <div class="empty"><div class="icon">📈</div><p>Enter a student ID and click Load Progress</p></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       PANEL: TEACHER
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="panel" id="panel-teacher">
+
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="num" id="statTotal">—</div>
+        <div class="lbl">Total Students</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" id="statStruggling">—</div>
+        <div class="lbl">Struggling</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" id="statTopics">—</div>
+        <div class="lbl">Topics Covered</div>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Struggling students -->
+      <div class="card">
+        <div class="section-title">Struggling Students</div>
+        <div class="field">
+          <label>Accuracy Threshold (%)</label>
+          <input type="number" id="threshold" value="70" min="0" max="100"/>
+        </div>
+        <button class="btn btn-primary" style="margin-bottom:16px;" onclick="loadStruggling()">Find Students</button>
+        <div id="strugglingList">
+          <div class="empty"><div class="icon">🔍</div><p>Click Find Students</p></div>
+        </div>
+      </div>
+
+      <!-- Hardest topics -->
+      <div class="card">
+        <div class="section-title">Hardest Topics</div>
+        <button class="btn btn-primary" style="margin-bottom:16px;" onclick="loadHardestTopics()">Load Topics</button>
+        <div id="hardestTopics">
+          <div class="empty"><div class="icon">📚</div><p>Click Load Topics</p></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Individual student report -->
+    <div class="card">
+      <div class="section-title">Student Report</div>
+      <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+        <div class="field" style="margin:0;flex:1;min-width:160px;">
+          <label>Student ID</label>
+          <input type="number" id="reportStudentId" placeholder="e.g. 1"/>
+        </div>
+        <button class="btn btn-primary" onclick="loadStudentReport()">Load Report</button>
+      </div>
+      <div id="studentReport" style="margin-top:20px;">
+        <div class="empty"><div class="icon">📋</div><p>Enter a student ID and click Load Report</p></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       PANEL: MANAGE STUDENTS
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="panel" id="panel-manage">
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <div class="section-title" style="margin:0;">All Students</div>
+        <button class="btn btn-primary btn-sm" onclick="loadAllStudents()">Refresh</button>
+      </div>
+      <div class="tbl-wrap" id="allStudentsTable">
+        <div class="empty"><div class="icon">👥</div><p>Click Refresh to load students</p></div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /shell -->
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+/* ── Helpers ─────────────────────────────────────────────────────────── */
+const api = () => document.getElementById('apiBase').value.replace(/\/$/, '');
+
+async function request(path, opts = {}) {
+  const res = await fetch(api() + path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || res.statusText);
+  }
+  return res.json();
+}
+
+function toast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = ''; }, 3500);
+}
+
+function setLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.disabled = loading;
+  btn._orig = btn._orig || btn.innerHTML;
+  btn.innerHTML = loading
+    ? `<span class="spinner ${btn.classList.contains('btn-primary') || btn.classList.contains('btn-accent') ? '' : 'dark'}"></span> Loading…`
+    : btn._orig;
+}
+
+/* ── Tabs ─────────────────────────────────────────────────────────────── */
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const panels = ['student','quiz','progress','teacher','manage'];
+    t.classList.toggle('active', panels[i] === name);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+/* ── Health check ─────────────────────────────────────────────────────── */
+async function checkHealth() {
+  const dot = document.getElementById('apiStatus');
+  try {
+    const data = await request('/health');
+    dot.className = 'api-status ' + (data.db === 'connected' ? 'ok' : 'err');
+    toast(data.db === 'connected' ? '✅ Connected to API & database' : '⚠️ API up but DB error', data.db === 'connected' ? 'success' : 'error');
+  } catch(e) {
+    dot.className = 'api-status err';
+    toast('❌ Cannot reach API — is it running?', 'error');
+  }
+}
+
+/* ── Students ─────────────────────────────────────────────────────────── */
+let _students = [];
+
+async function loadStudents() {
+  try {
+    _students = await request('/students');
+    const sel = document.getElementById('studentSelect');
+    sel.innerHTML = '<option value="">— select —</option>' +
+      _students.map(s => `<option value="${s.id}">${s.name} (ID: ${s.id})</option>`).join('');
+    toast(`Loaded ${_students.length} student(s)`);
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+function onStudentSelect() {
+  const id = document.getElementById('studentSelect').value;
+  const student = _students.find(s => s.id == id);
+  const welcome = document.getElementById('studentWelcome');
+  if (student) {
+    document.getElementById('welcomeName').textContent = '👋 Hello, ' + student.name;
+    document.getElementById('welcomeEmail').textContent = student.email;
+    welcome.style.display = 'block';
+    document.getElementById('ansStudentId').value = student.id;
+    document.getElementById('progStudentId').value = student.id;
+    loadQuickStats(student.id);
+  } else {
+    welcome.style.display = 'none';
+  }
+}
+
+async function loadQuickStats(studentId) {
+  const wrap = document.getElementById('quickStats');
+  try {
+    const data = await request('/student-progress/' + studentId);
+    const total = data.reduce((a, r) => a + r.total_attempts, 0);
+    const correct = data.reduce((a, r) => a + r.correct_attempts, 0);
+    const avg = total ? Math.round(100 * correct / total) : 0;
+    wrap.innerHTML = `
+      <div class="stats-row" style="grid-template-columns:repeat(3,1fr);">
+        <div class="stat-box"><div class="num">${total}</div><div class="lbl">Attempts</div></div>
+        <div class="stat-box"><div class="num">${correct}</div><div class="lbl">Correct</div></div>
+        <div class="stat-box"><div class="num">${avg}%</div><div class="lbl">Accuracy</div></div>
+      </div>
+      <div style="margin-top:12px;">
+        ${data.map(r => progressBar(r.topic, r.accuracy_percentage)).join('')}
+      </div>`;
+  } catch(e) {
+    wrap.innerHTML = '<div class="empty"><div class="icon">📭</div><p>No quiz data yet</p></div>';
+  }
+}
+
+async function registerStudent() {
+  const name  = document.getElementById('newName').value.trim();
+  const email = document.getElementById('newEmail').value.trim();
+  if (!name || !email) { toast('Please fill in both fields', 'error'); return; }
+  try {
+    const s = await request('/students', { method: 'POST', body: JSON.stringify({ name, email }) });
+    toast(`✅ Student created: ${s.name} (ID: ${s.id})`, 'success');
+    document.getElementById('newName').value = '';
+    document.getElementById('newEmail').value = '';
+    loadStudents();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+async function loadAllStudents() {
+  const wrap = document.getElementById('allStudentsTable');
+  try {
+    const students = await request('/students');
+    if (!students.length) {
+      wrap.innerHTML = '<div class="empty"><div class="icon">👥</div><p>No students yet</p></div>';
+      return;
+    }
+    wrap.innerHTML = `
+      <table>
+        <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Joined</th></tr></thead>
+        <tbody>${students.map(s => `
+          <tr>
+            <td><strong>${s.id}</strong></td>
+            <td>${s.name}</td>
+            <td style="color:var(--muted)">${s.email}</td>
+            <td style="color:var(--muted);font-size:.8rem">${new Date(s.joined_at).toLocaleDateString()}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+    document.getElementById('statTotal').textContent = students.length;
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+/* ── Quiz ─────────────────────────────────────────────────────────────── */
+let _currentQuestion = null;
+
+async function generateQuestion() {
+  const topic = document.getElementById('qTopic').value.trim();
+  const diff  = document.getElementById('qDifficulty').value;
+  if (!topic) { toast('Please enter a topic', 'error'); return; }
+
+  const btn = document.getElementById('btnGenQ');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating…';
+
+  try {
+    const q = await request(`/generate-question?topic=${encodeURIComponent(topic)}&difficulty=${diff}`);
+    showQuestion(q, diff);
+    toast('✅ Question generated and saved to database', 'success');
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+  finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Generate Question';
+  }
+}
+
+async function getAdaptiveQuestion() {
+  const studentId = document.getElementById('ansStudentId').value;
+  const topic     = document.getElementById('qTopic').value.trim();
+  if (!studentId) { toast('Select a student first', 'error'); return; }
+  if (!topic)     { toast('Enter a topic first', 'error'); return; }
+
+  const btn = document.getElementById('btnAdaptQ');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner dark"></span> Loading…';
+
+  try {
+    const q = await request(`/adaptive-question?student_id=${studentId}&topic=${encodeURIComponent(topic)}`);
+    showQuestion(q, 'adaptive');
+    toast('✅ Adaptive question loaded', 'success');
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+  finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Adaptive';
+  }
+}
+
+function showQuestion(q, diff) {
+  _currentQuestion = q;
+  document.getElementById('questionText').textContent = q.question;
+  document.getElementById('qDiffBadge').innerHTML = `<span class="badge badge-${diff}">${diff}</span>`;
+
+  const choicesWrap = document.getElementById('choicesWrap');
+  choicesWrap.innerHTML = '';
+  if (q.choices && q.choices.length) {
+    q.choices.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = c;
+      btn.onclick = () => {
+        document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById('answerInput').value = c;
+      };
+      choicesWrap.appendChild(btn);
+    });
+  }
+
+  document.getElementById('questionDisplay').classList.add('visible');
+  document.getElementById('feedbackBox').classList.remove('visible');
+  document.getElementById('btnSubmit').disabled = false;
+
+  // Pre-fill correct_answer hidden value
+  document.getElementById('btnSubmit').dataset.correct = q.correct_answer;
+  document.getElementById('btnSubmit').dataset.question = q.question;
+}
+
+async function submitAnswer() {
+  const studentId = document.getElementById('ansStudentId').value;
+  const answer    = document.getElementById('answerInput').value.trim();
+  const topic     = document.getElementById('qTopic').value.trim();
+  const btn       = document.getElementById('btnSubmit');
+
+  if (!studentId) { toast('Enter a student ID', 'error'); return; }
+  if (!answer)    { toast('Enter your answer', 'error'); return; }
+  if (!_currentQuestion) { toast('Generate a question first', 'error'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Submitting…';
+
+  try {
+    const result = await request('/submit-answer', {
+      method: 'POST',
+      body: JSON.stringify({
+        student_id: parseInt(studentId),
+        topic: topic || 'general',
+        question: _currentQuestion.question,
+        student_answer: answer,
+        correct_answer: _currentQuestion.correct_answer,
+        time_taken: 30,
+      }),
+    });
+
+    const fb = document.getElementById('feedbackBox');
+    fb.className = 'feedback-box visible ' + (result.is_correct ? 'correct' : 'wrong');
+    document.getElementById('feedbackResult').innerHTML =
+      result.is_correct
+        ? '<span class="badge badge-correct">✓ Correct!</span>'
+        : '<span class="badge badge-wrong">✗ Incorrect</span>';
+    document.getElementById('feedbackText').textContent = result.feedback;
+
+    toast(result.is_correct ? '🎉 Correct answer!' : '📖 Keep studying!', result.is_correct ? 'success' : '');
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+  finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Submit Answer';
+  }
+}
+
+/* ── Progress ─────────────────────────────────────────────────────────── */
+function progressBar(topic, pct) {
+  const cls = pct >= 75 ? 'fill-high' : pct >= 50 ? 'fill-mid' : 'fill-low';
+  return `
+    <div class="progress-wrap">
+      <div class="progress-label"><span>${topic}</span><span>${pct}%</span></div>
+      <div class="progress-bar"><div class="progress-fill ${cls}" style="width:${pct}%"></div></div>
+    </div>`;
+}
+
+async function loadProgress() {
+  const studentId = document.getElementById('progStudentId').value;
+  if (!studentId) { toast('Enter a student ID', 'error'); return; }
+  const wrap = document.getElementById('progressContent');
+  wrap.innerHTML = '<div class="empty"><span class="spinner dark"></span></div>';
+  try {
+    const data = await request('/student-progress/' + studentId);
+    const total   = data.reduce((a, r) => a + r.total_attempts, 0);
+    const correct = data.reduce((a, r) => a + r.correct_attempts, 0);
+    const avg     = total ? Math.round(100 * correct / total) : 0;
+
+    wrap.innerHTML = `
+      <div class="stats-row">
+        <div class="stat-box"><div class="num">${total}</div><div class="lbl">Total Attempts</div></div>
+        <div class="stat-box"><div class="num">${correct}</div><div class="lbl">Correct</div></div>
+        <div class="stat-box"><div class="num">${avg}%</div><div class="lbl">Overall Accuracy</div></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Accuracy by Topic</div>
+        ${data.map(r => progressBar(r.topic, r.accuracy_percentage)).join('')}
+      </div>
+      <div class="card">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Topic</th><th>Attempts</th><th>Correct</th><th>Accuracy</th></tr></thead>
+            <tbody>${data.map(r => `
+              <tr>
+                <td><strong>${r.topic}</strong></td>
+                <td>${r.total_attempts}</td>
+                <td>${r.correct_attempts}</td>
+                <td><span class="badge ${r.accuracy_percentage >= 75 ? 'badge-correct' : r.accuracy_percentage >= 50 ? 'badge-medium' : 'badge-wrong'}">${r.accuracy_percentage}%</span></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  } catch(e) {
+    wrap.innerHTML = `<div class="empty"><div class="icon">📭</div><p>${e.message}</p></div>`;
+  }
+}
+
+/* ── Teacher analytics ────────────────────────────────────────────────── */
+async function loadStruggling() {
+  const threshold = document.getElementById('threshold').value || 70;
+  const wrap = document.getElementById('strugglingList');
+  wrap.innerHTML = '<span class="spinner dark"></span>';
+  try {
+    const data = await request(`/analytics/struggling-students?threshold=${threshold}`);
+    document.getElementById('statStruggling').textContent = data.length;
+    if (!data.length) {
+      wrap.innerHTML = '<div class="empty"><div class="icon">🎉</div><p>No struggling students below ' + threshold + '%</p></div>';
+      return;
+    }
+    wrap.innerHTML = `
+      <table>
+        <thead><tr><th>Student ID</th><th>Attempts</th><th>Accuracy</th></tr></thead>
+        <tbody>${data.map(r => `
+          <tr>
+            <td><strong>#${r.student_id}</strong></td>
+            <td>${r.total_attempts}</td>
+            <td><span class="badge badge-wrong">${r.average_accuracy}%</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) { wrap.innerHTML = `<div class="empty"><p>${e.message}</p></div>`; }
+}
+
+async function loadHardestTopics() {
+  const wrap = document.getElementById('hardestTopics');
+  wrap.innerHTML = '<span class="spinner dark"></span>';
+  try {
+    const data = await request('/analytics/hardest-topics');
+    document.getElementById('statTopics').textContent = data.length;
+    wrap.innerHTML = data.map(r => progressBar(r.topic, r.average_accuracy)).join('') || '<div class="empty"><p>No data</p></div>';
+  } catch(e) { wrap.innerHTML = `<div class="empty"><p>${e.message}</p></div>`; }
+}
+
+async function loadStudentReport() {
+  const studentId = document.getElementById('reportStudentId').value;
+  if (!studentId) { toast('Enter a student ID', 'error'); return; }
+  const wrap = document.getElementById('studentReport');
+  wrap.innerHTML = '<span class="spinner dark"></span>';
+  try {
+    const data = await request('/analytics/student-report/' + studentId);
+    wrap.innerHTML = `
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Topic</th><th>Attempts</th><th>Correct</th><th>Accuracy</th><th>Status</th></tr></thead>
+          <tbody>${data.map(r => `
+            <tr>
+              <td><strong>${r.topic}</strong></td>
+              <td>${r.total_attempts}</td>
+              <td>${r.correct_attempts}</td>
+              <td>${r.accuracy_percentage}%</td>
+              <td>
+                ${r.accuracy_percentage >= 75
+                  ? '<span class="badge badge-correct">On Track</span>'
+                  : r.accuracy_percentage >= 50
+                  ? '<span class="badge badge-medium">Needs Work</span>'
+                  : '<span class="badge badge-wrong">Struggling</span>'}
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:16px;">
+        ${data.map(r => progressBar(r.topic, r.accuracy_percentage)).join('')}
+      </div>`;
+  } catch(e) { wrap.innerHTML = `<div class="empty"><p>${e.message}</p></div>`; }
+}
+
+/* ── Auto-load on start ───────────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', () => {
+  checkHealth();
+  loadStudents();
+});
+</script>
+</body>
+</html>
