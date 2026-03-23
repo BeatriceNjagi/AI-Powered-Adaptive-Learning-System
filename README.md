@@ -34,21 +34,17 @@ DATABASE_URL=postgresql://user:password@host:port/database
 GROQ_API_KEY=your_groq_api_key
 ```
 
-Get your Groq API key for free at: https://console.groq.com
-
 ### 3. Run the application
 
 ```bash
 uvicorn routes:app --reload
 ```
 
-> **Important:** Always run using `routes:app`, not `main:app`.
-
 ### 4. Open the interactive docs
 
 Go to: http://localhost:8000/docs
 
-From there you can test every endpoint directly in the browser — no need for curl or Postman.
+From there you can test every endpoint directly in the browser.
 
 ---
 
@@ -69,7 +65,7 @@ Note the `id` from the response (e.g. `1`).
 GET /generate-question?topic=math&difficulty=easy
 ```
 
-This calls Groq to create a question **and saves it to your database**. You can verify it appeared in DBeaver under the `questions` table.
+This calls Groq to create a question **and saves it to your database**. 
 
 ### Step 3: Submit an answer
 
@@ -86,7 +82,7 @@ Body:
 }
 ```
 
-Check DBeaver — a new row should appear in `quiz_results` and `performance_history`.
+Check database — a new row should appear in `quiz_results` and `performance_history`.
 
 ### Step 4: View student progress
 
@@ -164,7 +160,6 @@ When a student requests an adaptive question the system checks their history:
 
 **Groq questions not working?**
 - Make sure `GROQ_API_KEY` is set in `.env`
-- The old Mixtral model was shut down — the app now uses `llama3-8b-8192`
 - Run `/health` and check the terminal output for Groq error messages
 
 **Email already exists error?**
