@@ -6,30 +6,17 @@ load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 async def get_connection():
-    """
-    Creates and returns a connection to Aiven PostgreSQL.
-    Handles connection errors gracefully.
-    
-    The DATABASE_URL format is:
-    postgresql://user:password@host:port/database
-    
-    Possible failure modes:
-    - InvalidCatalogNameError: database doesn't exist
-    - CannotConnectNowError: server is down or unreachable
-    - Timeout: might be a network issue
-    
-    All errors are raised so the caller can decide how to handle them.
-    """
+    """Returns a connection to the PostgreSQL database."""
     if not DATABASE_URL:
         raise ValueError("DATABASE_URL environment variable is not set")
-    
+
     try:
         conn = await asyncpg.connect(DATABASE_URL)
         return conn
     except asyncpg.InvalidCatalogNameError as e:
-        raise Exception("Database catalog does not exist. Check DATABASE_URL and Aiven console.") from e
+        raise Exception("Database catalog does not exist. Check DATABASE_URL.") from e
     except asyncpg.CannotConnectNowError as e:
-        raise Exception("Cannot connect to database - server may be down or temporarily unavailable.") from e
+        raise Exception("Cannot connect to database — server may be down.") from e
     except asyncpg.PostgresError as e:
         raise Exception(f"PostgreSQL error: {str(e)}") from e
     except Exception as e:
@@ -37,15 +24,11 @@ async def get_connection():
 
 
 async def init_db():
-    """
-    Initialize database schema (runs on application startup).
-    Creates students, quiz_results, and performance_history tables if they don't exist.
-    """
+    """Creates all tables on startup if they don't exist."""
     conn = None
     try:
         conn = await get_connection()
-        
-        # Create students table
+
         await conn.execute(
             """
             CREATE TABLE IF NOT EXISTS students (
@@ -56,8 +39,7 @@ async def init_db():
             )
             """
         )
-        
-        # Create questions table
+
         await conn.execute(
             """
             CREATE TABLE IF NOT EXISTS questions (
@@ -66,32 +48,30 @@ async def init_db():
                 difficulty VARCHAR(20) NOT NULL,
                 question TEXT NOT NULL,
                 correct_answer TEXT NOT NULL,
-                choices TEXT,  -- JSON array of choices for multiple-choice questions
+                choices TEXT,
                 created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
             )
             """
         )
-        
-        # Create quiz_results table with time_taken
+
         await conn.execute(
             """
             CREATE TABLE IF NOT EXISTS quiz_results (
                 id SERIAL PRIMARY KEY,
                 student_id INT NOT NULL REFERENCES students(id),
-                question_id INT REFERENCES questions(id),  -- optional reference to stored question
+                question_id INT REFERENCES questions(id),
                 topic VARCHAR(100) NOT NULL,
                 question TEXT NOT NULL,
                 student_answer TEXT NOT NULL,
                 correct_answer TEXT NOT NULL,
                 is_correct BOOLEAN NOT NULL,
-                time_taken INT,  -- time in seconds
+                time_taken INT,
                 feedback TEXT,
                 submitted_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
             )
             """
         )
-        
-        # Create performance_history table (summary table)
+
         await conn.execute(
             """
             CREATE TABLE IF NOT EXISTS performance_history (
@@ -106,9 +86,10 @@ async def init_db():
             )
             """
         )
-        
+
     finally:
         if conn:
             await conn.close()
+
 
 
