@@ -6,7 +6,6 @@
 <title>AdaptIQ — Adaptive Learning System</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
 <style>
-  /* ── Reset & tokens ───────────────────────────────────────────────── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
@@ -37,19 +36,13 @@
     min-height: 100vh;
     overflow-x: hidden;
   }
-
-  /* ── Animated background grain ───────────────────────────────────── */
   body::before {
     content: '';
     position: fixed; inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
     pointer-events: none; z-index: 0; opacity: .5;
   }
-
-  /* ── Layout ───────────────────────────────────────────────────────── */
   .shell { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px 80px; }
-
-  /* ── Header ───────────────────────────────────────────────────────── */
   header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 28px 0 24px;
@@ -87,8 +80,6 @@
   }
   .api-status.ok  { background: var(--success); }
   .api-status.err { background: var(--danger); }
-
-  /* ── Tabs ─────────────────────────────────────────────────────────── */
   .tabs {
     display: flex; gap: 4px;
     border-bottom: 2px solid var(--border);
@@ -105,12 +96,8 @@
   }
   .tab:hover { color: var(--ink); }
   .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  /* ── Panels ───────────────────────────────────────────────────────── */
   .panel { display: none; animation: fadeUp .35s ease both; }
   .panel.active { display: block; }
-
-  /* ── Section titles ───────────────────────────────────────────────── */
   .section-title {
     font-family: var(--font-head); font-size: 1.25rem; font-weight: 800;
     letter-spacing: -.02em; margin-bottom: 20px;
@@ -119,8 +106,6 @@
   .section-title::after {
     content: ''; flex: 1; height: 1.5px; background: var(--border);
   }
-
-  /* ── Cards ────────────────────────────────────────────────────────── */
   .card {
     background: var(--card); border: 1.5px solid var(--border);
     border-radius: var(--radius); padding: 24px;
@@ -131,8 +116,6 @@
 
   .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   @media(max-width:640px){ .card-grid { grid-template-columns: 1fr; } }
-
-  /* ── Forms ────────────────────────────────────────────────────────── */
   .field { margin-bottom: 16px; }
   .field label {
     display: block; font-size: .78rem; font-weight: 500;
@@ -149,8 +132,6 @@
     outline: none; border-color: var(--accent2);
   }
   .field textarea { resize: vertical; min-height: 80px; }
-
-  /* ── Buttons ──────────────────────────────────────────────────────── */
   .btn {
     font-family: var(--font-head); font-size: .82rem; font-weight: 700;
     letter-spacing: .05em; text-transform: uppercase;
@@ -168,8 +149,6 @@
   .btn-accent:hover { background: #a83210; border-color: #a83210; }
   .btn-sm { padding: 7px 16px; font-size: .75rem; }
   .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
-
-  /* ── Badges ───────────────────────────────────────────────────────── */
   .badge {
     display: inline-block; font-size: .7rem; font-weight: 700;
     letter-spacing: .06em; text-transform: uppercase;
@@ -180,8 +159,6 @@
   .badge-easy    { background: #d4f0e0; color: var(--success); }
   .badge-medium  { background: #fff3cd; color: #856404; }
   .badge-hard    { background: #fde8e0; color: var(--danger); }
-
-  /* ── Stat boxes ───────────────────────────────────────────────────── */
   .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
   @media(max-width:500px){ .stats-row { grid-template-columns: 1fr 1fr; } }
   .stat-box {
@@ -194,8 +171,6 @@
     color: var(--accent); line-height: 1;
   }
   .stat-box .lbl { font-size: .72rem; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .05em; }
-
-  /* ── Progress bar ─────────────────────────────────────────────────── */
   .progress-wrap { margin: 8px 0; }
   .progress-label { display: flex; justify-content: space-between; font-size: .78rem; color: var(--muted); margin-bottom: 4px; }
   .progress-bar { height: 8px; background: var(--cream); border-radius: 99px; overflow: hidden; }
@@ -203,8 +178,6 @@
   .fill-high   { background: var(--success); }
   .fill-mid    { background: var(--gold); }
   .fill-low    { background: var(--danger); }
-
-  /* ── Table ────────────────────────────────────────────────────────── */
   .tbl-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: .88rem; }
   th {
@@ -215,8 +188,6 @@
   td { padding: 11px 14px; border-bottom: 1px solid var(--border); }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: var(--cream); }
-
-  /* ── Toast ────────────────────────────────────────────────────────── */
   #toast {
     position: fixed; bottom: 28px; right: 28px; z-index: 999;
     font-family: var(--font-body); font-size: .88rem;
@@ -230,8 +201,6 @@
   #toast.show { transform: translateY(0); opacity: 1; }
   #toast.success { background: var(--success); }
   #toast.error   { background: var(--danger); }
-
-  /* ── Feedback box ─────────────────────────────────────────────────── */
   .feedback-box {
     background: var(--cream); border-left: 4px solid var(--accent2);
     border-radius: 0 8px 8px 0; padding: 16px 18px;
@@ -241,8 +210,6 @@
   .feedback-box.visible { display: block; animation: fadeUp .3s ease; }
   .feedback-box.correct { border-left-color: var(--success); }
   .feedback-box.wrong   { border-left-color: var(--danger); }
-
-  /* ── Question card ────────────────────────────────────────────────── */
   .question-display {
     background: var(--ink); color: var(--paper);
     border-radius: var(--radius); padding: 24px;
@@ -266,8 +233,6 @@
   }
   .choice-btn:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.35); }
   .choice-btn.selected { background: var(--accent2); border-color: var(--accent2); }
-
-  /* ── Spinner ──────────────────────────────────────────────────────── */
   .spinner {
     display: inline-block; width: 16px; height: 16px;
     border: 2px solid rgba(255,255,255,.3);
@@ -275,15 +240,11 @@
     animation: spin .7s linear infinite;
   }
   .spinner.dark { border-color: rgba(0,0,0,.15); border-top-color: var(--ink); }
-
-  /* ── Empty state ──────────────────────────────────────────────────── */
   .empty {
     text-align: center; padding: 48px 24px; color: var(--muted);
   }
   .empty .icon { font-size: 2.5rem; margin-bottom: 12px; }
   .empty p { font-size: .9rem; }
-
-  /* ── Animations ───────────────────────────────────────────────────── */
   @keyframes fadeUp   { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
   @keyframes fadeDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
   @keyframes spin     { to { transform: rotate(360deg); } }
@@ -296,8 +257,6 @@
 <body>
 
 <div class="shell">
-
-  <!-- Header -->
   <header>
     <div>
       <div class="logo">Adapt<span>IQ</span></div>
@@ -309,8 +268,6 @@
       <button class="btn btn-outline btn-sm" onclick="checkHealth()">Connect</button>
     </div>
   </header>
-
-  <!-- Tabs -->
   <nav class="tabs">
     <button class="tab active" onclick="switchTab('student')">🎓 Student</button>
     <button class="tab" onclick="switchTab('quiz')">✏️ Quiz</button>
@@ -318,10 +275,6 @@
     <button class="tab" onclick="switchTab('teacher')">📊 Teacher</button>
     <button class="tab" onclick="switchTab('manage')">👥 Students</button>
   </nav>
-
-  <!-- ══════════════════════════════════════════════════════════════════
-       PANEL: STUDENT
-  ═══════════════════════════════════════════════════════════════════ -->
   <div class="panel active" id="panel-student">
 
     <div class="card-grid">
@@ -369,10 +322,6 @@
     </div>
 
   </div>
-
-  <!-- ══════════════════════════════════════════════════════════════════
-       PANEL: QUIZ
-  ═══════════════════════════════════════════════════════════════════ -->
   <div class="panel" id="panel-quiz">
 
     <div class="card-grid">
@@ -426,10 +375,6 @@
     </div>
 
   </div>
-
-  <!-- ══════════════════════════════════════════════════════════════════
-       PANEL: MY PROGRESS
-  ═══════════════════════════════════════════════════════════════════ -->
   <div class="panel" id="panel-progress">
 
     <div class="card">
@@ -448,10 +393,6 @@
     </div>
 
   </div>
-
-  <!-- ══════════════════════════════════════════════════════════════════
-       PANEL: TEACHER
-  ═══════════════════════════════════════════════════════════════════ -->
   <div class="panel" id="panel-teacher">
 
     <div class="stats-row">
@@ -511,10 +452,6 @@
     </div>
 
   </div>
-
-  <!-- ══════════════════════════════════════════════════════════════════
-       PANEL: MANAGE STUDENTS
-  ═══════════════════════════════════════════════════════════════════ -->
   <div class="panel" id="panel-manage">
 
     <div class="card">
@@ -530,12 +467,9 @@
   </div>
 
 </div><!-- /shell -->
-
-<!-- Toast -->
 <div id="toast"></div>
 
 <script>
-/* ── Helpers ─────────────────────────────────────────────────────────── */
 const api = () => document.getElementById('apiBase').value.replace(/\/$/, '');
 
 async function request(path, opts = {}) {
@@ -567,8 +501,6 @@ function setLoading(btnId, loading) {
     ? `<span class="spinner ${btn.classList.contains('btn-primary') || btn.classList.contains('btn-accent') ? '' : 'dark'}"></span> Loading…`
     : btn._orig;
 }
-
-/* ── Tabs ─────────────────────────────────────────────────────────────── */
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach((t, i) => {
     const panels = ['student','quiz','progress','teacher','manage'];
@@ -577,8 +509,6 @@ function switchTab(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
 }
-
-/* ── Health check ─────────────────────────────────────────────────────── */
 async function checkHealth() {
   const dot = document.getElementById('apiStatus');
   try {
@@ -590,8 +520,6 @@ async function checkHealth() {
     toast('❌ Cannot reach API — is it running?', 'error');
   }
 }
-
-/* ── Students ─────────────────────────────────────────────────────────── */
 let _students = [];
 
 async function loadStudents() {
@@ -677,8 +605,6 @@ async function loadAllStudents() {
     document.getElementById('statTotal').textContent = students.length;
   } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
-
-/* ── Quiz ─────────────────────────────────────────────────────────────── */
 let _currentQuestion = null;
 
 async function generateQuestion() {
@@ -793,8 +719,6 @@ async function submitAnswer() {
     btn.innerHTML = 'Submit Answer';
   }
 }
-
-/* ── Progress ─────────────────────────────────────────────────────────── */
 function progressBar(topic, pct) {
   const cls = pct >= 75 ? 'fill-high' : pct >= 50 ? 'fill-mid' : 'fill-low';
   return `
@@ -844,8 +768,6 @@ async function loadProgress() {
     wrap.innerHTML = `<div class="empty"><div class="icon">📭</div><p>${e.message}</p></div>`;
   }
 }
-
-/* ── Teacher analytics ────────────────────────────────────────────────── */
 async function loadStruggling() {
   const threshold = document.getElementById('threshold').value || 70;
   const wrap = document.getElementById('strugglingList');
@@ -914,8 +836,6 @@ async function loadStudentReport() {
       </div>`;
   } catch(e) { wrap.innerHTML = `<div class="empty"><p>${e.message}</p></div>`; }
 }
-
-/* ── Auto-load on start ───────────────────────────────────────────────── */
 window.addEventListener('DOMContentLoaded', () => {
   checkHealth();
   loadStudents();
@@ -923,3 +843,4 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
