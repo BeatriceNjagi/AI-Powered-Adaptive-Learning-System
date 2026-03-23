@@ -148,20 +148,3 @@ When a student requests an adaptive question the system checks their history:
 | No history yet | Medium (default) |
 
 ---
-
-## Troubleshooting
-
-**Database not saving data?**
-- Make sure `DATABASE_URL` is set correctly in `.env`
-- Run `/health` to check if the database connection is working
-- Check that you're running `uvicorn routes:app` (not `main:app`)
-
-**Groq questions not working?**
-- Make sure `GROQ_API_KEY` is set in `.env`
-- Run `/health` and check the terminal output for Groq error messages
-
-**Email already exists error?**
-- Each student needs a unique email — try a different one
-
-**Student not found when submitting answer?**
-- You must create the student first with `POST /students` before submitting answers
