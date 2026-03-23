@@ -57,8 +57,6 @@ POST /students
 Body: {"name": "Jane Doe", "email": "jane@example.com"}
 ```
 
-Note the `id` from the response (e.g. `1`).
-
 ### Step 2: Generate a question
 
 ```
